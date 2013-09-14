@@ -1,0 +1,71 @@
+<?php
+
+/**
+ * Implements hook_media_internet_providers().
+ */
+function media_ooyala_media_internet_providers() {
+  $info['MediaInternetOoyalaHandler'] = array(
+    'title' => t('Ooyala'),
+  );
+
+  return $info;
+}
+
+/**
+ * Implements hook_media_parse().
+ *
+ * @todo This hook should be deprecated. Refactor Media module to not call it
+ *   any more, since media_internet should be able to automatically route to the
+ *   appropriate handler.
+ */
+function media_ooyala_media_parse($embed_code) {
+	dpm($embed_code);
+  $handler = new MediaInternetOoyalaHandler($embed_code);
+  return $handler->parse($embed_code);
+}
+
+/**
+ * Implements hook_file_mimetype_mapping_alter().
+ *
+ * Regster the video/ooyala mimetype.
+ */
+function media_ooyala_file_mimetype_mapping_alter(&$mapping) {
+  $mapping['mimetypes'][] = 'video/ooyala';
+}
+
+/**
+ * Ooyala search tab for the Media browser.
+ */
+
+/**
+ * Implements hook_media_browser_plugin_info().
+ *
+ * Commented out for release versions, active in dev versions. To enable the
+ * YouTube media browser tab, uncomment this function.
+ */
+function media_ooyala_media_browser_plugin_info() {
+  $info['ooyala'] = array(
+    'title' => t('Ooyala'),
+    'class' => 'MediaOoyalaBrowser',
+  );
+
+  return $info;
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function media_ooyala_form_alter(&$form, &$form_state, $form_id) {
+	dpm($form_id);
+	switch ($form_id) {
+		case 'media_internet_add':
+			$_SESSION['form'] = $form;
+			dpm($form);
+			break;
+		
+		default:
+			# code...
+			break;
+	}
+}
+
