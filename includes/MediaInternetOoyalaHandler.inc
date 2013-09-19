@@ -24,6 +24,7 @@ class MediaInternetOoyalaHandler extends MediaInternetBaseHandler {
   static public function validId($embed_code) {
     try {
       $response = drupal_http_request('http://api.ooyala.com/v2/assets/$embed_code/metadata');
+      return TRUE;
     } catch (Exception $e) {
       throw new MediaInternetValidationException($e);
     }
@@ -67,7 +68,7 @@ class MediaInternetOoyalaHandler extends MediaInternetBaseHandler {
   public function getMRSS() {
     $uri = $this->parse($this->embedCode);
     $video_id = arg(1, file_uri_target($uri));
-    $rss_url = url('http://gdata.youtube.com/feeds/api/videos/' . $video_id, array('query' => array('v' => '2')));
+    $rss_url = url('http://api.ooyala.com/v2/assets/$video_id');
     // @todo Use media_retrieve_xml() once it's upgraded to include elements
     //   from all namespaces, not just the document default namespace.
     $request = drupal_http_request($rss_url);

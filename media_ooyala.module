@@ -57,7 +57,7 @@ function theme_media_ooyala_video($variables) {
   $embed_code = $variables['embed_code'];
   $container_id = $variables['container_id'];
   $params = $variables['params'];
-
+  dpm($params);
   if ($player_version === 'v3') {
     drupal_add_js('http://player.ooyala.com/v3/' . $params['ooyalaPlayerId'], 'external');
 
@@ -69,9 +69,7 @@ function theme_media_ooyala_video($variables) {
   else {
     $output = '<div id="' . $container_id . '"></div><script type="text/javascript" src="http://player.ooyala.com/player.js?' . htmlspecialchars(http_build_query($params)) . '"></script>';
   }
-
-  return theme('media_ooyala_html', array('markup' => $output));
-
+  return $output;
 }
 
 /**
@@ -113,7 +111,7 @@ function media_ooyala_file_mimetype_mapping_alter(&$mapping) {
  * Implements hook_media_browser_plugin_info().
  *
  * Commented out for release versions, active in dev versions. To enable the
- * YouTube media browser tab, uncomment this function.
+ * Ooyala media browser tab, uncomment this function.
  */
 function media_ooyala_media_browser_plugin_info() {
   $info['ooyala'] = array(
@@ -122,12 +120,4 @@ function media_ooyala_media_browser_plugin_info() {
   );
 
   return $info;
-}
-
-/**
- * Provides a form for adding media items from Ooyala search.
- */
-function media_ooyala_add($form = array(), &$form_state = array()) {
-  module_load_include('inc', 'media', 'includes/media.browser');
-  return $form;
 }

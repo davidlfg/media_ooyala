@@ -3,7 +3,7 @@
 /**
  * @file media_ooyala/themes/media_ooyala.theme.inc
  *
- * Theme and preprocess functions for Media: Vimeo.
+ * Theme and preprocess functions for Media: Ooyala.
  */
 
 /**

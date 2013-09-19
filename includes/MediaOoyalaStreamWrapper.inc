@@ -21,7 +21,7 @@ class MediaOoyalaStreamWrapper extends MediaReadOnlyStreamWrapper {
   }
 
   /**
-   * Call the Vimeo Simple API and fetch the video information.
+   * Call the ooyala Simple API and fetch the video information.
    *
    * See http://ooyala.com/
    *

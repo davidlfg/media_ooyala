@@ -20,19 +20,10 @@ function media_ooyala_file_formatter_info() {
     'height' => (int) variable_get('ooyala_video_height', 390),
     'ooyalaPlayerId' => variable_get('ooyala_player_id', ''),
     'enableChannels' => TRUE,
-    'wmode' => 'transparent',
+    'wmode' => 'transparent', //opaque, transparent, window
     'onCreate' => 'Drupal.ooyala.onCreate',
   );
 
-  /*$formatters['media_ooyala_image'] = array(
-    'label' => t('Ooyala Preview Image'),
-    'file types' => array('video'),
-    'default settings' => array(
-      'image_style' => '',
-    ),
-    'view callback' => 'media_ooyala_file_formatter_image_view',
-    'settings callback' => 'media_ooyala_file_formatter_image_settings',
-  );*/
   return $formatters;
 }
 
@@ -86,7 +77,6 @@ function media_ooyala_file_formatter_video_settings($form, &$form_state, $settin
     '#disabled' => TRUE,
   );
 
-
   return $element;
 }
 
@@ -98,34 +88,6 @@ function _ooyala_validate_video_width_and_height($element, &$form_state, $form) 
   // Check if the value is a number with an optional decimal or percentage sign, or "auto".
   if (!empty($element['#value']) && !preg_match('/^(auto|([0-9]*(\.[0-9]+)?%?))$/', $element['#value'])) {
     form_error($element, t("The value entered for @dimension is invalid. Please insert a unitless integer for pixels, a percent, or \"auto\". Note that percent and auto may not function correctly depending on the browser and doctype.", array('@dimension' => $element['#title'])));
-  }
-}
-
-/**
- * Implements hook_file_formatter_FORMATTER_view().
- */
-function media_ooyala_file_formatter_image_view($file, $display, $langcode) {
-  $scheme = file_uri_scheme($file->uri);
-  if ($scheme == 'ooyala') {
-    $wrapper = file_stream_wrapper_get_instance_by_uri($file->uri);
-    $image_style = $display['settings']['image_style'];
-    $valid_image_styles = image_style_options(FALSE);
-    if (empty($image_style) || !isset($valid_image_styles[$image_style])) {
-      $element = array(
-        '#theme' => 'image',
-        '#path' => $wrapper->getOriginalThumbnailPath(),
-        '#alt' => $file->filename,
-      );
-    }
-    else {
-      $element = array(
-        '#theme' => 'image_style',
-        '#style_name' => $image_style,
-        '#path' => $wrapper->getLocalThumbnailPath(),
-        '#alt' => $file->filename,
-      );
-    }
-    return $element;
   }
 }
 
@@ -187,31 +149,5 @@ function media_ooyala_file_default_displays() {
       'settings' => $settings,
     );
   }
-
-  // Default settings for displaying a video preview image.
-  // We enable preview images even for view modes that also play video
-  // for use inside a running WYSIWYG editor. We weight them so video 
-  // formatters come first in the cascade to make sure the video formatter
-  // is used whenever possible.
-  $default_image_styles = array(
-    'default' => 'large',
-    'preview' => 'media_thumbnail',
-    'teaser' => 'large',
-    // Legacy view modes, see note above.
-    'media_preview' => 'media_thumbnail',
-    'media_large' => 'large',
-    'media_original' => '',
-  );
-  foreach ($default_image_styles as $view_mode => $image_style) {
-    $display_name = 'video__' . $view_mode . '__media_ooyala_image';
-    $default_displays[$display_name] = (object) array(
-      'api_version' => 1,
-      'name' => $display_name,
-      'status' => 1,
-      'weight' => 2,
-      'settings' => array('image_style' => $image_style),
-    );
-  }
-
   return $default_displays;
 }
