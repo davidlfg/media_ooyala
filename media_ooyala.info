@@ -3,13 +3,14 @@ description = Provides ooyala support for File Entity and the Media module.
 package = "Media"
 core = 7.x
 
+files[] = media_ooyala.module
 files[] = includes/MediaInternetOoyalaHandler.inc
 files[] = includes/MediaOoyalaStreamWrapper.inc
 files[] = includes/MediaOoyalaBrowser.inc
-
+files[] = includes/media_ooyala.formatters.inc
 dependencies[] = media
 dependencies[] = media_internet
-
+dependencies[] = ooyala
 project = "media_ooyala"
 
 

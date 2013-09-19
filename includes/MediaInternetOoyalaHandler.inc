@@ -21,40 +21,21 @@ class MediaInternetOoyalaHandler extends MediaInternetBaseHandler {
    * @return
    *   Boolean.
    */
-  static public function validId($id) {
-    dpm('entro1');
-    $url = 'http://www.ooyala.com/oembed?url=http%3A//youtube.com/watch%3Fv%3D'. $id;
-    $response = drupal_http_request($url, array('method' => 'HEAD'));
-    if ($response->code == 401) {
-      throw new MediaInternetValidationException("Embedding has been disabled for this video.");
+  static public function validId($embed_code) {
+    try {
+      $response = drupal_http_request('http://api.ooyala.com/v2/assets/$embed_code/metadata');
+    } catch (Exception $e) {
+      throw new MediaInternetValidationException($e);
     }
-    elseif ($response->code != 200) {
-      throw new MediaInternetValidationException("The YouTube video ID is invalid or the video was deleted.");
-    }
-    return TRUE;
   }
 
   public function parse($embedCode) {
-    $patterns = array(
-      '@youtube\.com/watch[#\?].*?v=([^"\& ]+)@i',
-      '@youtube\.com/embed/([^"\&\? ]+)@i',
-      '@youtube\.com/v/([^"\&\? ]+)@i',
-      '@youtube\.com/\?v=([^"\& ]+)@i',
-      '@youtu\.be/([^"\&\? ]+)@i',
-      '@gdata\.youtube\.com/feeds/api/videos/([^"\&\? ]+)@i',
-    );
-    foreach ($patterns as $pattern) {
-      preg_match($pattern, $embedCode, $matches);
-      // @TODO: Parse is called often. Refactor so that valid ID is checked
-      // when a video is added, but not every time the embedCode is parsed.
-      if (isset($matches[1]) && self::validId($matches[1])) {
-        return file_stream_wrapper_uri_normalize('youtube://v/' . $matches[1]);
-      }
+    if (isset($embedCode) && self::validId($embedCode)) {
+      return file_stream_wrapper_uri_normalize('ooyala://v/' . $embedCode);
     }
   }
 
    public function claim($embedCode) {
-    dpm('entro3');
     if ($this->parse($embedCode)) {
       return TRUE;
     }
@@ -63,11 +44,12 @@ class MediaInternetOoyalaHandler extends MediaInternetBaseHandler {
   public function getFileObject() {
     $uri = $this->parse($this->embedCode);
     $file = file_uri_to_object($uri, TRUE);
-
+    $file->type = 'video';
+    $file->filemime = 'video/ooyala';
     if (empty($file->fid) && $info = $this->getOEmbed()) {
-      $file->filename = truncate_utf8($info['title'], 255);
+      $file->filename = truncate_utf8($info['name'], 255);
     }
-
+    dpm($file);
     return $file;
   }
 
@@ -111,15 +93,23 @@ class MediaInternetOoyalaHandler extends MediaInternetBaseHandler {
    */
   public function getOEmbed() {
     $uri = $this->parse($this->embedCode);
+    //dpm(ooyala_item_load($embed_code));
     $external_url = file_create_url($uri);
-    $oembed_url = url('http://www.youtube.com/oembed', array('query' => array('url' => $external_url, 'format' => 'json')));
-    $response = drupal_http_request($oembed_url);
-    if (!isset($response->error)) {
-      return drupal_json_decode($response->data);
-    }
-    else {
-      throw new Exception("Error Processing Request. (Error: {$response->code}, {$response->error})");
+    //dpm($external_url);
+    if ($info = $this->getOoyalaLoad($this->embedCode)) {
+      return $info;
+    } else {
+      throw new Exception("Error Processing Request");
       return;
+    }
+  }
+ 
+  public function getOoyalaLoad($embedCode) {
+    module_load_include('inc', 'ooyala', 'includes/ooyala.api');
+    if (isset($embedCode) && ooyala_api_available()) {
+      return ooyala_item_load($embedCode);
+    } else {
+      return FALSE;
     }
   }
 }
